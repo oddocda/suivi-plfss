@@ -134,6 +134,27 @@ if sorts_now:
     out["adoptes_depuis_dernier_passage"] = adoptes if prev else None
     (d / "sorts.json").write_text(json.dumps(sorts_now, ensure_ascii=False), encoding="utf-8")
 
+# 4bis. Historique des compteurs -> rythme / séance active
+hist_path = d / "historique.csv"
+ex = out.get("nombreAmendementsExamines")
+hist = []
+try:
+    for l in hist_path.read_text(encoding="utf-8").splitlines():
+        t, n = l.split(",")
+        hist.append((datetime.strptime(t, "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc), int(n)))
+except Exception:  # noqa: BLE001
+    pass
+now = datetime.now(timezone.utc)
+if isinstance(ex, int):
+    il_y_a_1h = [n for t, n in hist if (now - t).total_seconds() >= 3300]
+    if il_y_a_1h:
+        out["examines_derniere_heure"] = ex - il_y_a_1h[-1]
+    if hist:
+        out["seance_active_probable"] = ex != hist[-1][1] or (
+            out.get("examines_derniere_heure") or 0) > 0
+    with hist_path.open("a", encoding="utf-8") as f:
+        f.write(f"{now.strftime('%Y-%m-%dT%H:%MZ')},{ex}\n")
+
 # 5. Ligne de notification
 def fmt(n):
     return f"{n:,}".replace(",", " ") if isinstance(n, int) else "non disponible"
@@ -144,6 +165,8 @@ if out.get("restants_avant_changement") is not None:
     parts.append(f"{out['restants_avant_changement']} restants avant "
                  f"{out.get('division_suivante') or 'fin du texte'}")
 parts.append(f"{fmt(out.get('nombreAmendementsRestants'))} restants sur {fmt(out.get('nombreAmendementsTotal'))}")
+if out.get("examines_derniere_heure") is not None:
+    parts.append(f"{out['examines_derniere_heure']} examinés en 1 h")
 out["ligne"] = " — ".join(parts)
 
 print(json.dumps(out, ensure_ascii=False, indent=2))

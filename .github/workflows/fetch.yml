@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: snapshot
@@ -37,6 +38,21 @@ jobs:
 
       - name: Calculer le point d'avancement
         run: python3 scripts/point.py data > data/point.json && cat data/point.json
+
+      - name: Notifier (issue n°1, une fois par heure si le point a changé)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ligne=$(python3 -c "import json;print(json.load(open('data/point.json'))['ligne'])")
+          prev=$(cat data/derniere_notif.txt 2>/dev/null || true)
+          minute=$(date -u +%M)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || { [ "$minute" -lt 15 ] && [ "$ligne" != "$prev" ]; }; then
+            heure=$(TZ=Europe/Paris date +%Hh%M)
+            gh issue comment 1 -R "${{ github.repository }}" --body "**${heure}** — ${ligne}"
+            echo "$ligne" > data/derniere_notif.txt
+          else
+            echo "pas de notification (minute=$minute, inchangé=$([ "$ligne" = "$prev" ] && echo oui || echo non))"
+          fi
 
       - name: Enregistrer
         run: |
