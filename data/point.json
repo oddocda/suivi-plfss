@@ -1,6 +1,8 @@
 {
-  "genere_utc": "2026-10-22T05:20Z",
-  "erreurs": [],
+  "genere_utc": "2026-10-22T05:24Z",
+  "erreurs": [
+    "premier snapshot horodaté : rythme disponible au prochain passage"
+  ],
   "nombreAmendementsTotal": 2835,
   "nombreAmendementsExamines": 218,
   "nombreAmendementsRestants": 2617,
@@ -13,8 +15,9 @@
   "division_libelle": "Après l'article 6",
   "restants_avant_changement": 22,
   "amendements_dans_division": 33,
+  "restants_division": 23,
   "division_suivante": "Art. 7",
-  "nouveaux_sorts_depuis_dernier_passage": 0,
-  "adoptes_depuis_dernier_passage": [],
-  "ligne": "ap6 — amdt n° 1596 — 22 restants avant Art. 7 — 2 617 restants sur 2 835"
+  "debattus_derniere_heure": null,
+  "seance_active_probable": false,
+  "ligne": "ap6 : 23 restants / 33 — rythme n.d."
 }
