@@ -1,0 +1,20 @@
+{
+  "genere_utc": "2026-10-22T05:19Z",
+  "erreurs": [],
+  "nombreAmendementsTotal": 2835,
+  "nombreAmendementsExamines": 218,
+  "nombreAmendementsRestants": 2617,
+  "amendement_appele": "1596",
+  "bibard_appele": "3211",
+  "autre_texte_en_seance": false,
+  "nb_divisions": 34,
+  "restants_calcules_derouleur": 0,
+  "division": "ap6",
+  "division_libelle": "Après l'article 6",
+  "restants_avant_changement": 0,
+  "amendements_dans_division": 33,
+  "division_suivante": null,
+  "nouveaux_sorts_depuis_dernier_passage": null,
+  "adoptes_depuis_dernier_passage": null,
+  "ligne": "ap6 — amdt n° 1596 — 0 restants avant fin du texte — 2 617 restants sur 2 835"
+}
