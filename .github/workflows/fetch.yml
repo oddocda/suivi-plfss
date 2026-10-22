@@ -1,0 +1,47 @@
+name: Snapshot Eliasse PLFSS
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Toutes les 15 min, 12h-23h UTC (14h-01h Paris), lun-ven. GitHub peut retarder ces lancements.
+    - cron: "*/15 12-23 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EXAMEN: EXANR5L17PO838901B3211P0D1
+      BIBARD: "3211"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Télécharger les données Eliasse
+        run: |
+          mkdir -p data
+          UA="Mozilla/5.0 (suivi-plfss; usage personnel)"
+          base="https://eliasse.assemblee-nationale.fr/api-eliasse/examens/${EXAMEN}"
+          curl -fsS -A "$UA" -m 60 "${base}/statistiques" -o data/statistiques.json
+          curl -fsS -A "$UA" -m 120 "${base}/derouleur"     -o data/derouleur.json
+          curl -fsS -A "$UA" -m 60 \
+            "https://eliasse-ancienne-version.assemblee-nationale.fr/eliasse/prochainADiscuter.do?legislature=17&bibard=${BIBARD}&bibardSuffixe=&organeAbrv=AN" \
+            -o data/prochain.txt
+          ls -la data
+
+      - name: Calculer le point d'avancement
+        run: python3 scripts/point.py data > data/point.json && cat data/point.json
+
+      - name: Enregistrer
+        run: |
+          git config user.name "snapshot-bot"
+          git config user.email "snapshot-bot@users.noreply.github.com"
+          git add data
+          git commit -m "snapshot $(date -u +%Y-%m-%dT%H:%MZ)" || echo "rien de nouveau"
+          git push
