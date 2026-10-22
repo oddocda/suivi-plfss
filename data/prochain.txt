@@ -1,1 +1,1 @@
-{"prochainADiscuter":{"bibard":"3211","bibardSuffixe":"","numAmdt":"1309","legislature":"17","organeAbrv":"AN"}}
+{"prochainADiscuter":{"bibard":"3211","bibardSuffixe":"","numAmdt":"1647","legislature":"17","organeAbrv":"AN"}}
