@@ -113,6 +113,7 @@ if places:
         out["division_libelle"] = p.get("libelle")
         out["restants_avant_changement"] = len(apres)
         out["amendements_dans_division"] = len(amdts)
+        out["restants_division"] = sum(1 for a in amdts if sans_sort(a))
         # division suivante qui a encore des amendements
         nxt = next((q for q in places[idx_place + 1:]
                     if any(sans_sort(a) for a in (q.get("amendements") or []))), None)
@@ -120,53 +121,59 @@ if places:
     elif num:
         out["erreurs"].append(f"amendement {num} absent du dérouleur")
 
-# 4. Sorts nouveaux depuis le passage précédent
-prev = {}
-try:
-    prev = json.loads((d / "sorts.json").read_text(encoding="utf-8"))
-except Exception:  # noqa: BLE001
-    pass
-if sorts_now:
-    nouveaux = {k: v for k, v in sorts_now.items() if v and norm(v) != "aucun" and prev.get(k) != v}
-    adoptes = sorted((k for k, v in nouveaux.items() if norm(v).startswith("adopt")),
-                     key=lambda x: int(re.sub(r"\D", "", x) or 0))
-    out["nouveaux_sorts_depuis_dernier_passage"] = len(nouveaux) if prev else None
-    out["adoptes_depuis_dernier_passage"] = adoptes if prev else None
-    (d / "sorts.json").write_text(json.dumps(sorts_now, ensure_ascii=False), encoding="utf-8")
-
-# 4bis. Historique des compteurs -> rythme / séance active
-hist_path = d / "historique.csv"
-ex = out.get("nombreAmendementsExamines")
-hist = []
-try:
-    for l in hist_path.read_text(encoding="utf-8").splitlines():
-        t, n = l.split(",")
-        hist.append((datetime.strptime(t, "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc), int(n)))
-except Exception:  # noqa: BLE001
-    pass
+# 4. Horodatage des sorts -> amendements débattus dans la dernière heure
+#    sorts_horodatage.json : {numero: [sort, "YYYY-MM-DDTHH:MMZ" | null]}
+#    null = sort déjà présent au premier snapshot (heure inconnue, jamais compté).
 now = datetime.now(timezone.utc)
-if isinstance(ex, int):
-    il_y_a_1h = [n for t, n in hist if (now - t).total_seconds() >= 3300]
-    if il_y_a_1h:
-        out["examines_derniere_heure"] = ex - il_y_a_1h[-1]
-    if hist:
-        out["seance_active_probable"] = ex != hist[-1][1] or (
-            out.get("examines_derniere_heure") or 0) > 0
-    with hist_path.open("a", encoding="utf-8") as f:
-        f.write(f"{now.strftime('%Y-%m-%dT%H:%MZ')},{ex}\n")
+stamp = now.strftime("%Y-%m-%dT%H:%MZ")
+hpath = d / "sorts_horodatage.json"
+try:
+    horo = json.loads(hpath.read_text(encoding="utf-8"))
+    premier = False
+except Exception:  # noqa: BLE001
+    horo, premier = {}, True
+if sorts_now:
+    for k, v in sorts_now.items():
+        examine = bool(v) and norm(v) != "aucun"
+        if not examine:
+            horo.pop(k, None)          # retour à « Aucun » (réserve, rectification…)
+            continue
+        if k not in horo or horo[k][0] != v:
+            horo[k] = [v, None if premier else stamp]
+    hpath.write_text(json.dumps(horo, ensure_ascii=False), encoding="utf-8")
+
+    def recent(t):
+        if not t:
+            return False
+        dt = datetime.strptime(t, "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc)
+        return (now - dt).total_seconds() <= 3600
+    derniers = [(k, v) for k, (v, t) in horo.items() if recent(t)]
+    if premier:
+        out["debattus_derniere_heure"] = None
+        out["erreurs"].append("premier snapshot horodaté : rythme disponible au prochain passage")
+    else:
+        out["debattus_derniere_heure"] = len(derniers)
+        out["dont_tombes"] = sum(1 for _, v in derniers if norm(v).startswith("tomb"))
+        detail = {}
+        for _, v in derniers:
+            detail[v] = detail.get(v, 0) + 1
+        out["detail_derniere_heure"] = detail
+        # couverture : depuis quand l'historique existe
+        t0 = min((t for _, t in horo.values() if t), default=None)
+        out["historique_depuis_utc"] = t0
+    out["seance_active_probable"] = bool(out.get("debattus_derniere_heure"))
 
 # 5. Ligne de notification
-def fmt(n):
-    return f"{n:,}".replace(",", " ") if isinstance(n, int) else "non disponible"
+def nd(x):
+    return "n.d." if x is None else str(x)
 
-parts = [out.get("division") or "division non disponible",
-         f"amdt n° {out.get('amendement_appele') or 'non disponible'}"]
-if out.get("restants_avant_changement") is not None:
-    parts.append(f"{out['restants_avant_changement']} restants avant "
-                 f"{out.get('division_suivante') or 'fin du texte'}")
-parts.append(f"{fmt(out.get('nombreAmendementsRestants'))} restants sur {fmt(out.get('nombreAmendementsTotal'))}")
-if out.get("examines_derniere_heure") is not None:
-    parts.append(f"{out['examines_derniere_heure']} examinés en 1 h")
-out["ligne"] = " — ".join(parts)
+ligne = (f"{out.get('division') or 'article n.d.'} : "
+         f"{nd(out.get('restants_division'))} restants / {nd(out.get('amendements_dans_division'))}")
+if out.get("debattus_derniere_heure") is not None:
+    ligne += (f" — {out['debattus_derniere_heure']} débattus en 1 h "
+              f"(dont {out.get('dont_tombes', 0)} tombés)")
+else:
+    ligne += " — rythme n.d."
+out["ligne"] = ligne
 
 print(json.dumps(out, ensure_ascii=False, indent=2))
