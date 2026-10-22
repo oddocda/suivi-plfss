@@ -45,7 +45,7 @@ def compact(libelle):
 
 def sans_sort(a):
     s = norm(a.get("sort") or a.get("sortEnSeance") or "")
-    return s in ("", "en discussion", "a discuter", "null", "none")
+    return s in ("", "aucun", "en discussion", "a discuter", "null", "none")
 
 
 # 1. Statistiques officielles
@@ -127,7 +127,7 @@ try:
 except Exception:  # noqa: BLE001
     pass
 if sorts_now:
-    nouveaux = {k: v for k, v in sorts_now.items() if v and prev.get(k) != v}
+    nouveaux = {k: v for k, v in sorts_now.items() if v and norm(v) != "aucun" and prev.get(k) != v}
     adoptes = sorted((k for k, v in nouveaux.items() if norm(v).startswith("adopt")),
                      key=lambda x: int(re.sub(r"\D", "", x) or 0))
     out["nouveaux_sorts_depuis_dernier_passage"] = len(nouveaux) if prev else None
