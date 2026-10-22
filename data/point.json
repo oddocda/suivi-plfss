@@ -1,5 +1,5 @@
 {
-  "genere_utc": "2026-10-22T05:19Z",
+  "genere_utc": "2026-10-22T05:20Z",
   "erreurs": [],
   "nombreAmendementsTotal": 2835,
   "nombreAmendementsExamines": 218,
@@ -8,13 +8,13 @@
   "bibard_appele": "3211",
   "autre_texte_en_seance": false,
   "nb_divisions": 34,
-  "restants_calcules_derouleur": 0,
+  "restants_calcules_derouleur": 840,
   "division": "ap6",
   "division_libelle": "Après l'article 6",
-  "restants_avant_changement": 0,
+  "restants_avant_changement": 22,
   "amendements_dans_division": 33,
-  "division_suivante": null,
-  "nouveaux_sorts_depuis_dernier_passage": null,
-  "adoptes_depuis_dernier_passage": null,
-  "ligne": "ap6 — amdt n° 1596 — 0 restants avant fin du texte — 2 617 restants sur 2 835"
+  "division_suivante": "Art. 7",
+  "nouveaux_sorts_depuis_dernier_passage": 0,
+  "adoptes_depuis_dernier_passage": [],
+  "ligne": "ap6 — amdt n° 1596 — 22 restants avant Art. 7 — 2 617 restants sur 2 835"
 }
