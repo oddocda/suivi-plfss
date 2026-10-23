@@ -1,5 +1,5 @@
 {
-  "genere_utc": "2026-10-22T22:45Z",
+  "genere_utc": "2026-10-23T00:58Z",
   "erreurs": [],
   "nombreAmendementsTotal": 2804,
   "nombreAmendementsExamines": 756,
@@ -15,15 +15,10 @@
   "amendements_dans_division": 21,
   "restants_division": 16,
   "division_suivante": "ap11",
-  "debattus_derniere_heure": 179,
-  "dont_tombes": 98,
-  "detail_derniere_heure": {
-    "Rejeté": 39,
-    "Non soutenu": 31,
-    "Adopté": 11,
-    "Tombé": 98
-  },
+  "debattus_derniere_heure": 0,
+  "dont_tombes": 0,
+  "detail_derniere_heure": {},
   "historique_depuis_utc": "2026-10-22T10:50Z",
-  "seance_active_probable": true,
-  "ligne": "Art. 11 : 16 restants / 21 — 179 débattus en 1 h (dont 98 tombés)"
+  "seance_active_probable": false,
+  "ligne": "Art. 11 : 16 restants / 21 — 0 débattus en 1 h (dont 0 tombés)"
 }
